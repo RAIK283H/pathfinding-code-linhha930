@@ -111,8 +111,30 @@ class Scoreboard:
                 if player_object.player_config_data == player_configuration_info:
                     display_element.text = f"Speed: {player_object.speed:.1f}"
 
+    def display_winner(self, winner_name):
+        winner_label = pyglet.text.Label(f"Winner: {winner_name}",
+                                        x=0,
+                                        y=self.stat_height * (self.number_of_stats + 1),
+                                        font_name='Arial',
+                                        font_size=self.font_size,
+                                        batch=self.batch,
+                                        group=self.group,
+                                        color=(255, 215, 0, 255))
+
+        self.winner_display = winner_label
+
+    def update_winner(self):
+        player_excess_distances = [(max(0, player.distance_traveled - self.distance_to_exit), player.player_config_data[0])
+                               for player in global_game_data.player_objects]
+    
+        winner_name = min(player_excess_distances, key=lambda x: x[0])[1]
+    
+        self.display_winner(winner_name)
+
+
     def update_scoreboard(self):
         self.update_elements_locations()
         self.update_paths()
         self.update_distance_to_exit()
         self.update_distance_traveled()
+        self.update_winner()

@@ -1,3 +1,4 @@
+from collections import deque
 import graph_data
 import global_game_data
 from numpy import random
@@ -57,14 +58,88 @@ def generate_random_path(graph, start, end, target):
 
     return path 
 
-
 def get_dfs_path():
-    return [1,2]
+    graph = graph_data.graph_data[global_game_data.current_graph_index] 
+    start = 0
+    end = len(graph) - 1
+
+    potential_targets = [i for i in range(len(graph)) if i != start and i != end]
+    target = random.choice(potential_targets)
+
+    path1 = dfs(graph, start, target, visited=[], currpath=[])
+    path2 = dfs(graph, target, end, visited=[], currpath=[])
+    path = path1 + path2[1:]
+
+    if path is not None:
+        assert target in path
+        assert path[-1] == end
+
+        for i in range(len(path) - 1):
+            assert path[i + 1] in graph[path[i]][1]
+
+    return path
+
+
+def dfs(graph, node, end, visited, currpath):
+    # 'node' here starts out as the start node
+    visited.append(node)
+    currpath.append(node)
+
+    if node == end:
+        return currpath
+
+    for neighbor in graph[node][1]:
+        if neighbor not in visited:
+            path = dfs(graph, neighbor, end, visited, currpath)
+            if path:
+                return path
+
+    currpath.pop() 
+    return None  
 
 
 def get_bfs_path():
-    return [1,2]
+    graph = graph_data.graph_data[global_game_data.current_graph_index] 
+    start = 0
+    end = len(graph) - 1
 
+    potential_targets = [i for i in range(len(graph)) if i != start and i != end]
+    target = random.choice(potential_targets)
+
+    path1 = bfs(graph, start, target)
+    path2 = bfs(graph, target, end)
+    path = path1 + path2[1:]
+
+    if path is not None:
+        assert target in path
+        assert path[-1] == end
+
+        for i in range(len(path) - 1):
+            assert path[i + 1] in graph[path[i]][1]
+
+    return path
+
+def bfs(graph, start, end):
+    queue = deque([[start]])
+    visited = set()  
+
+    while queue:
+        path = queue.popleft()  
+        node = path[-1]       
+
+        if node == end:
+            return path
+
+        if node not in visited: 
+            visited.add(node)  
+
+            for neighbor in graph[node][1]: 
+                if neighbor not in visited: 
+                    new_path = list(path) 
+                    new_path.append(neighbor)
+                    queue.append(new_path) 
+
+    return None
 
 def get_dijkstra_path():
     return [1,2]
