@@ -1,7 +1,8 @@
 import math
 import unittest
 import graph_data
-from pathing import bfs, dfs, generate_random_path, get_dfs_path 
+from pathing import bfs, dfs, generate_random_path, get_dfs_path
+from permutation import find_largest_mobile_integer, generate_permutations, is_hamiltonian, sjt_hamiltonian_cycles 
 
 class TestPathFinding(unittest.TestCase):
 
@@ -54,6 +55,74 @@ class TestPathFinding(unittest.TestCase):
 
         self.assertEqual(path[0], start)
         self.assertEqual(path[-1], end)
+
+    def test_find_largest_mobile_integer(self):
+        permutations = [1, 3, 2]
+        directions = [-1, -1, 1] 
+        
+        largest_index = find_largest_mobile_integer(permutations, directions)
+        
+        self.assertEqual(largest_index, 1)
+
+        permutations = [3, 2, 1]
+        directions = [-1, -1, -1]  # No mobile integer
+        largest_index = find_largest_mobile_integer(permutations, directions)
+        self.assertEqual(largest_index, -1)
+
+    def test_find_largest_mobile_integer_edge_case(self):
+        permutations = [1, 2, 3, 4]
+        directions = [1, 1, 1, -1]  # The last element (4) can move left
+        largest_index = find_largest_mobile_integer(permutations, directions)
+        self.assertEqual(largest_index, 3)  # 4 is the largest mobile integer at index 3
+
+    def test_is_hamiltonian_valid(self):
+        graph = [
+            [(0, 0), [1]],    
+            [(1, 1), [0, 2]], 
+            [(2, 2), [1, 3]], 
+            [(3, 3), [2, 0]]  
+        ]
+
+        res = is_hamiltonian(graph, [1, 2])
+        self.assertTrue(res)  
+    
+    def test_is_hamiltonian_invalid(self):
+        graph = [
+            [(0, 0), [1]],    
+            [(1, 1), [0, 2]], 
+            [(2, 2), [1, 3]], 
+            [(3, 3), [2, 0]]  
+        ]
+
+        res = is_hamiltonian(graph, [1, 2, 3])
+        self.assertFalse(res)  
+
+    def test_generate_permutations(self):
+        nodes = [1, 2, 3]
+        
+        expected_permutations = [
+            [1, 2, 3],
+            [1, 3, 2],
+            [2, 1, 3],
+            [2, 3, 1],
+            [3, 2, 1],
+            [3, 1, 2],
+        ]
+
+        actual_permutations = generate_permutations(nodes)
+        self.assertEqual(sorted(actual_permutations), sorted(expected_permutations))
+
+    def test_sjt_hamiltonian_cycles(self):
+        graph = [
+            [(0, 0), [1]],    
+            [(1, 1), [0, 2]], 
+            [(2, 2), [1, 3]], 
+            [(3, 3), [2, 0]]  
+        ]
+
+        expected_cycles = [[1, 2], [2, 1]]
+        result = sjt_hamiltonian_cycles(graph)
+        self.assertEqual(result, expected_cycles)
 
 if __name__ == '__main__':
     unittest.main()
