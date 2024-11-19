@@ -1,7 +1,8 @@
 import math
 import unittest
+import global_game_data
 import graph_data
-from pathing import bfs, dfs, generate_random_path, get_dfs_path
+from pathing import bfs, dfs, generate_dijkstra_path, generate_random_path
 from permutation import find_largest_mobile_integer, generate_permutations, is_hamiltonian, sjt_hamiltonian_cycles 
 
 class TestPathFinding(unittest.TestCase):
@@ -123,6 +124,14 @@ class TestPathFinding(unittest.TestCase):
         expected_cycles = [[1, 2], [2, 1]]
         result = sjt_hamiltonian_cycles(graph)
         self.assertEqual(result, expected_cycles)
+
+    def test_generate_dijkstras_path(self):
+        graph = graph_data.graph_data[global_game_data.current_graph_index]
+        start = 0
+        end = len(graph) - 1
+
+        path = generate_dijkstra_path(graph, start, end)
+
 
 if __name__ == '__main__':
     unittest.main()

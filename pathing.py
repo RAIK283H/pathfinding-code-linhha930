@@ -1,12 +1,14 @@
 from collections import deque
+import heapq
+import math
 import graph_data
 import global_game_data
-from numpy import random
+from numpy import inf, random
 
 def set_current_graph_paths():
     global_game_data.graph_paths.clear()
-    global_game_data.graph_paths.append(get_test_path())
-    global_game_data.graph_paths.append(get_random_path())
+    # global_game_data.graph_paths.append(get_test_path())
+    # global_game_data.graph_paths.append(get_random_path())
     global_game_data.graph_paths.append(get_dfs_path())
     global_game_data.graph_paths.append(get_bfs_path())
     global_game_data.graph_paths.append(get_dijkstra_path())
@@ -23,8 +25,7 @@ def get_random_path():
     start = 0
     end = len(graph) - 1 
 
-    potential_targets = [i for i in range(len(graph)) if i != start and i != end]
-    target = random.choice(potential_targets)
+    target = global_game_data.target_node[global_game_data.current_graph_index]
 
     path = generate_random_path(graph, start, end, target)
     # Postcondition: cannot return an empty path
@@ -46,13 +47,13 @@ def generate_random_path(graph, start, end, target):
             next_node = target
             target_reached = True
         else:
-            next_node = random.choice(neighbors)
+            next_node = int(random.choice(neighbors))
 
         path.append(next_node)
         current_node = next_node
 
         if current_node == end and not target_reached:
-            next_node = random.choice(neighbors)
+            next_node = int(random.choice(neighbors))
             current_node = next_node
 
 
@@ -63,8 +64,7 @@ def get_dfs_path():
     start = 0
     end = len(graph) - 1
 
-    potential_targets = [i for i in range(len(graph)) if i != start and i != end]
-    target = random.choice(potential_targets)
+    target = global_game_data.target_node[global_game_data.current_graph_index]
 
     path1 = dfs(graph, start, target, visited=[], currpath=[])
     path2 = dfs(graph, target, end, visited=[], currpath=[])
@@ -103,8 +103,7 @@ def get_bfs_path():
     start = 0
     end = len(graph) - 1
 
-    potential_targets = [i for i in range(len(graph)) if i != start and i != end]
-    target = random.choice(potential_targets)
+    target = global_game_data.target_node[global_game_data.current_graph_index]
 
     path1 = bfs(graph, start, target)
     path2 = bfs(graph, target, end)
@@ -142,4 +141,60 @@ def bfs(graph, start, end):
     return None
 
 def get_dijkstra_path():
-    return [1,2]
+    graph = graph_data.graph_data[global_game_data.current_graph_index]
+    start = 0
+    end = len(graph) - 1
+    target = global_game_data.target_node[global_game_data.current_graph_index]
+
+    path1 = generate_dijkstra_path(graph, start, target)  
+    path2 = generate_dijkstra_path(graph, target, end) 
+
+    full_path = path1 + path2[1:]
+    assert target in full_path
+    assert full_path[-1] == end
+
+    for i in range(len(full_path) - 1):
+            assert full_path[i + 1] in graph[full_path[i]][1]
+
+    return full_path
+
+def generate_dijkstra_path(graph, source, destination):
+    dist = [float('inf')] * len(graph) # Store shortest distances
+    dist[source] = 0
+    parent = [None] * len(graph) # Store parent of each vertex in shortest path tree
+    visited = [False] * len(graph) 
+
+    pq = [] # Priority queue
+    heapq.heappush(pq, (0, source))
+
+    while pq:
+        _, u = heapq.heappop(pq)
+        if visited[u]:
+            continue
+        visited[u] = True
+
+        if u == destination:
+            return reconstruct_path(parent, source, destination)
+        
+        for v in graph[u][1]: 
+            alt = dist[u] + dist_between(graph, u, v)
+            if not visited[v] and alt < dist[v]: 
+                dist[v] = alt
+                parent[v] = u
+                heapq.heappush(pq, (dist[v], v))
+    
+    return None
+
+def reconstruct_path(parent_arr, source, destination): 
+    path = []
+    current = destination
+    while current is not None: 
+        path.append(current)
+        current = parent_arr[current]
+    path.reverse()
+    return path
+
+def dist_between(graph, u, v):
+    x1, y1 = graph[u][0]  # Coordinates of node u in graph 
+    x2, y2 = graph[v][0]  # Coordinates of node v in graph 
+    return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
